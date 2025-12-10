@@ -2,9 +2,9 @@ import os
 import json
 import requests
 import msal
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, url_for
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', static_url_path='/static')
 
 # Email credentials - set these in Render environment variables
 EMAIL_CLIENT_ID = os.getenv('EMAIL_CLIENT_ID')
@@ -19,7 +19,7 @@ INVOICE_DATA = {
             "Worker": "Angad Dogra",
             "Worker_Email": "angad.dogra@desri.com",
             "Worker_Manager": "Vikas Agrawal",
-            "Worker_Manager_Email": "vikas.agrawal@desri.com",
+            "Worker_Manager_Email": "angad.dogra@desri.com",
             "Supplier_Invoice": "373809",
             "Invoice_Number": "IN-117893",
             "Company": "Rocking R Solar, LLC",
@@ -34,7 +34,7 @@ INVOICE_DATA = {
             "Worker": "Angad Dogra",
             "Worker_Email": "angad.dogra@desri.com",
             "Worker_Manager": "Vikas Agrawal",
-            "Worker_Manager_Email": "vikas.agrawal@desri.com",
+            "Worker_Manager_Email": "angad.dogra@desri.com",
             "Supplier_Invoice": "09262025_T",
             "Invoice_Number": "IN-118715",
             "Company": "DESRI Drew Solar Financing Holdings, L.L.C.",
@@ -49,7 +49,7 @@ INVOICE_DATA = {
             "Worker": "Angad Dogra",
             "Worker_Email": "angad.dogra@desri.com",
             "Worker_Manager": "Vikas Agrawal",
-            "Worker_Manager_Email": "vikas.agrawal@desri.com",
+            "Worker_Manager_Email": "angad.dogra@desri.com",
             "Supplier_Invoice": "09262025_Fin Hold LC Fees_Test",
             "Invoice_Number": "IN-118714",
             "Company": "DESRI Drew Solar Financing Holdings, L.L.C.",
@@ -64,7 +64,7 @@ INVOICE_DATA = {
             "Worker": "Angad Dogra",
             "Worker_Email": "angad.dogra@desri.com",
             "Worker_Manager": "Vikas Agrawal",
-            "Worker_Manager_Email": "vikas.agrawal@desri.com",
+            "Worker_Manager_Email": "angad.dogra@desri.com",
             "Supplier_Invoice": "09232025_Drew A1_t2",
             "Invoice_Number": "IN-118713",
             "Company": "DESRI A1 Drew Solar Borrower, L.L.C.",
@@ -87,6 +87,7 @@ def create_invoice_table_html(invoices):
     <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%; font-family: Arial, sans-serif;">
         <thead>
             <tr style="background-color: #4A4A4A; color: white;">
+                <th style="text-align: left; padding: 10px;">Aging</th>
                 <th style="text-align: left; padding: 10px;">Invoice Number</th>
                 <th style="text-align: left; padding: 10px;">Company</th>
                 <th style="text-align: left; padding: 10px;">Supplier</th>
@@ -102,6 +103,7 @@ def create_invoice_table_html(invoices):
     for inv in invoices:
         html += f"""
             <tr>
+                <td style="padding: 8px;">{inv.get('Aging', '')}</td>
                 <td style="padding: 8px;">{inv.get('Invoice_Number', '')}</td>
                 <td style="padding: 8px;">{inv.get('Company', '')}</td>
                 <td style="padding: 8px;">{inv.get('Supplier', '')}</td>
