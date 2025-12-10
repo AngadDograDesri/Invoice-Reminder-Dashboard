@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice Reminder - Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #1a1a2e; color: #eee; min-height: 100vh; padding: 2rem; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 { color: #00d4ff; margin-bottom: 0.5rem; font-size: 2rem; }
+        .subtitle { color: #888; margin-bottom: 2rem; }
+        .actions { margin-bottom: 2rem; display: flex; gap: 1rem; }
+        .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.2s; }
+        .btn-primary { background: linear-gradient(135deg, #00d4ff, #0099cc); color: #000; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0, 212, 255, 0.4); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .card { background: #16213e; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; border: 1px solid #0f3460; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .worker-name { font-size: 1.25rem; font-weight: 600; color: #00d4ff; }
+        .worker-email { color: #888; font-size: 0.9rem; }
+        .manager-info { color: #666; font-size: 0.85rem; margin-top: 0.25rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th { background: #0f3460; color: #00d4ff; padding: 0.75rem; text-align: left; font-weight: 600; }
+        td { padding: 0.75rem; border-bottom: 1px solid #0f3460; }
+        tr:hover { background: rgba(0, 212, 255, 0.05); }
+        .amount { text-align: right; font-weight: 600; color: #4ade80; }
+        .days { text-align: right; }
+        .days.overdue { color: #ef4444; }
+        .days.soon { color: #fbbf24; }
+        .days.ok { color: #4ade80; }
+        .toast { position: fixed; bottom: 2rem; right: 2rem; padding: 1rem 1.5rem; border-radius: 8px; color: #fff; font-weight: 500; opacity: 0; transform: translateY(20px); transition: all 0.3s; z-index: 1000; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.success { background: #059669; }
+        .toast.error { background: #dc2626; }
+        .stats { display: flex; gap: 2rem; margin-bottom: 2rem; }
+        .stat { background: #16213e; padding: 1.5rem; border-radius: 12px; border: 1px solid #0f3460; }
+        .stat-value { font-size: 2rem; font-weight: 700; color: #00d4ff; }
+        .stat-label { color: #888; font-size: 0.9rem; }
+        .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(0,0,0,0.3); border-radius: 50%; border-top-color: #000; animation: spin 0.8s linear infinite; margin-right: 8px; vertical-align: middle; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📧 Invoice Reminder Dashboard</h1>
+        <p class="subtitle">Demo - Send reminder emails to workers with pending invoices</p>
+        
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value">{{ invoices|length }}</div>
+                <div class="stat-label">Total Invoices</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">{{ workers|length }}</div>
+                <div class="stat-label">Workers</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">${{ "%.2f"|format(invoices|sum(attribute='Invoice_amount'|float)) }}</div>
+                <div class="stat-label">Total Amount</div>
+            </div>
+        </div>
+        
+        <div class="actions">
+            <button class="btn btn-primary" onclick="sendAllEmails()" id="sendAllBtn">
+                🚀 Send All Reminder Emails
+            </button>
+        </div>
+        
+        {% for email, worker in workers.items() %}
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <div class="worker-name">{{ worker.name }}</div>
+                    <div class="worker-email">{{ worker.email }}</div>
+                    <div class="manager-info">Manager: {{ worker.manager }} ({{ worker.manager_email }})</div>
+                </div>
+                <button class="btn btn-primary" onclick="sendEmail('{{ worker.email }}')" id="btn-{{ worker.email|replace('@', '-')|replace('.', '-') }}">
+                    Send Email
+                </button>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Invoice #</th>
+                        <th>Company</th>
+                        <th>Supplier</th>
+                        <th>Amount</th>
+                        <th>Category</th>
+                        <th>Due Date</th>
+                        <th>Days</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for inv in worker.invoices %}
+                    <tr>
+                        <td>{{ inv.Invoice_Number }}</td>
+                        <td>{{ inv.Company }}</td>
+                        <td>{{ inv.Supplier }}</td>
+                        <td class="amount">${{ inv.Invoice_amount }}</td>
+                        <td>{{ inv['Spend_Category_(Worktag)'] }}</td>
+                        <td>{{ inv.Due_Date }}</td>
+                        <td class="days {% if inv['Invoice_Due_Within_(Days)']|int < 0 %}overdue{% elif inv['Invoice_Due_Within_(Days)']|int <= 7 %}soon{% else %}ok{% endif %}">
+                            {{ inv['Invoice_Due_Within_(Days)'] }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="toast" id="toast"></div>
+    
+    <script>
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show ' + type;
+            setTimeout(() => toast.className = 'toast', 3000);
+        }
+        
+        async function sendEmail(workerEmail) {
+            const btnId = 'btn-' + workerEmail.replace('@', '-').replace(/\./g, '-');
+            const btn = document.getElementById(btnId);
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner"></span>Sending...';
+            btn.disabled = true;
+            
+            try {
+                const response = await fetch('/send-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ worker_email: workerEmail })
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('✓ Email sent to ' + workerEmail, 'success');
+                    btn.innerHTML = '✓ Sent';
+                } else {
+                    showToast('✗ ' + result.error, 'error');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                showToast('✗ Network error', 'error');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+        
+        async function sendAllEmails() {
+            const btn = document.getElementById('sendAllBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner"></span>Sending all...';
+            btn.disabled = true;
+            
+            try {
+                const response = await fetch('/send-all', { method: 'POST' });
+                const result = await response.json();
+                
+                showToast(`✓ Sent: ${result.sent}, Failed: ${result.failed}`, result.failed > 0 ? 'error' : 'success');
+                btn.innerHTML = `✓ ${result.sent} Sent`;
+            } catch (err) {
+                showToast('✗ Network error', 'error');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
+
