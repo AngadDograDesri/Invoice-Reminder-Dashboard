@@ -10,7 +10,7 @@ app = Flask(__name__, static_folder='static', static_url_path='/static')
 EMAIL_CLIENT_ID = os.getenv('EMAIL_CLIENT_ID')
 EMAIL_CLIENT_SECRET = os.getenv('EMAIL_CLIENT_SECRET')
 EMAIL_TENANT_ID = os.getenv('EMAIL_TENANT_ID')
-SENDER_EMAIL = os.getenv('SENDER_EMAIL', 'Angad.Dogra@desri.com')
+SENDER_EMAIL = os.getenv('SENDER_EMAIL', 'Tamana.Gupta@desri.com')
 
 # Static invoice data (from your JSON file)
 INVOICE_DATA = {
@@ -408,6 +408,7 @@ def send_all():
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
+
 
 
 
