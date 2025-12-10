@@ -158,6 +158,9 @@ def send_email_graph(to_email, subject, body_html, cc_emails=None):
 def index():
     invoices = INVOICE_DATA.get('Matched_Results', [])
     
+    # Calculate total amount
+    total_amount = sum(float(inv.get('Invoice_amount', 0)) for inv in invoices)
+    
     # Group by worker
     workers = {}
     for inv in invoices:
@@ -172,7 +175,7 @@ def index():
             }
         workers[email]['invoices'].append(inv)
     
-    return render_template('index.html', workers=workers, invoices=invoices)
+    return render_template('index.html', workers=workers, invoices=invoices, total_amount=total_amount)
 
 @app.route('/send-email', methods=['POST'])
 def send_email():
