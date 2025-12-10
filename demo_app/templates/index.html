@@ -56,7 +56,7 @@
                 <div class="stat-label">Workers</div>
             </div>
             <div class="stat">
-                <div class="stat-value">${{ "%.2f"|format(invoices|sum(attribute='Invoice_amount'|float)) }}</div>
+                <div class="stat-value">${{ "%.2f"|format(total_amount) }}</div>
                 <div class="stat-label">Total Amount</div>
             </div>
         </div>
@@ -173,4 +173,5 @@
     </script>
 </body>
 </html>
+
 
