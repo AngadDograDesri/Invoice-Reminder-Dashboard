@@ -217,13 +217,18 @@
         .table {
             width: 100%;
             border-collapse: collapse;
-            background: var(--table-bg);
-            color: var(--text-primary);
+            background: var(--table-bg) !important;
+            color: var(--text-primary) !important;
+            --bs-table-bg: var(--table-bg);
+            --bs-table-color: var(--text-primary);
+            --bs-table-border-color: var(--border-color);
+            --bs-table-striped-bg: var(--table-hover);
+            --bs-table-hover-bg: var(--table-hover);
         }
         .table thead th {
-            background-color: var(--table-header-bg);
-            color: var(--text-primary);
-            border-color: var(--border-color);
+            background-color: var(--table-header-bg) !important;
+            color: var(--text-primary) !important;
+            border-color: var(--border-color) !important;
             padding: 14px 16px;
             text-align: left;
             font-weight: 600;
@@ -231,21 +236,36 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        .table tbody td {
-            border-color: var(--border-color);
-            padding: 14px 16px;
-            border-bottom: 1px solid var(--border-color);
-            color: var(--text-primary);
-            font-size: 0.95em;
-        }
         .table tbody tr {
+            background-color: var(--table-bg) !important;
             transition: background-color 0.15s ease;
         }
+        .table tbody td {
+            border-color: var(--border-color) !important;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color) !important;
+            color: var(--text-primary) !important;
+            font-size: 0.95em;
+            background-color: transparent !important;
+        }
         .table tbody tr:hover {
-            background-color: var(--table-hover);
+            background-color: var(--table-hover) !important;
+        }
+        .table tbody tr:hover td {
+            background-color: transparent !important;
         }
         .table tbody tr:last-child td {
-            border-bottom: none;
+            border-bottom: none !important;
+        }
+        /* Dark mode table overrides */
+        [data-theme="dark"] .table,
+        [data-theme="dark"] .table thead th,
+        [data-theme="dark"] .table tbody tr,
+        [data-theme="dark"] .table tbody td {
+            border-color: var(--border-color) !important;
+        }
+        [data-theme="dark"] .table-responsive {
+            border-color: var(--border-color);
         }
         /* Alerts */
         .alert {
@@ -532,12 +552,6 @@
                     <div class="stat-item">
                         <strong id="total-count">{{ invoices|length }}</strong> <span>Total Invoices</span>
                     </div>
-                    <div class="stat-item">
-                        <strong>{{ workers|length }}</strong> <span>Workers</span>
-                    </div>
-                    <div class="stat-item">
-                        <strong>${{ "%.2f"|format(total_amount) }}</strong> <span>Total Amount</span>
-                    </div>
                 </div>
                 <div class="button-group">
                     <button class="btn btn-primary" onclick="refreshData()">Refresh Data</button>
@@ -789,3 +803,4 @@
     </script>
 </body>
 </html>
+
