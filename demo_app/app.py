@@ -228,6 +228,15 @@ INVOICE_DATA = {
     ]
 }
 
+def should_cc_manager(invoices):
+    """Check if manager should be CC'd - only if any invoice aging is greater than 5 days."""
+    for inv in invoices:
+        aging = inv.get('Aging', '')
+        # CC manager if aging is anything other than "0 - 5 Days"
+        if aging and aging != '0 - 5 Days':
+            return True
+    return False
+
 def create_invoice_table_html(invoices):
     """Create HTML table for invoices."""
     if not invoices:
@@ -359,9 +368,11 @@ def send_email():
     """
     
     try:
-        cc_list = [manager_email] if manager_email and manager_email != worker_email else None
+        # Only CC manager if any invoice aging is greater than 5 days
+        cc_list = [manager_email] if manager_email and manager_email != worker_email and should_cc_manager(invoices) else None
         send_email_graph(worker_email, subject, body, cc_list)
-        return jsonify({'success': True, 'message': f'Email sent to {worker_email}'})
+        cc_info = f" (CC: {manager_email})" if cc_list else ""
+        return jsonify({'success': True, 'message': f'Email sent to {worker_email}{cc_info}'})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
@@ -397,7 +408,8 @@ def send_all():
         """
         
         try:
-            cc_list = [manager_email] if manager_email and manager_email != worker_email else None
+            # Only CC manager if any invoice aging is greater than 5 days
+            cc_list = [manager_email] if manager_email and manager_email != worker_email and should_cc_manager(invoices) else None
             send_email_graph(worker_email, subject, body, cc_list)
             results['sent'] += 1
         except Exception as e:
@@ -408,7 +420,4 @@ def send_all():
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
-
-
-
 
